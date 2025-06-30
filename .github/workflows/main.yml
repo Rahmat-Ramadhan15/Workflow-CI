@@ -29,24 +29,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install mlflow
 
-      - name: Run mlflow project
-        run: |
-          mlflow run . --env-manager=local
-
       - name: Run MLflow Project and Capture RUN_ID
         id: run_mlflow
         run: |
           echo "Menjalankan MLflow Project..."
           output=$(mlflow run . --env-manager=local --experiment-name "Telco-Customer-Churn-Tuning")
           echo "$output"
-      
+
           RUN_ID=$(echo "$output" | grep -oP "Run \(ID '\K[^']+")
           if [ -z "$RUN_ID" ]; then
-            echo "Gagal menangkap RUN_ID!"
+            echo "❌ Gagal menangkap RUN_ID!"
             exit 1
           fi
-      
-          echo "RUN_ID didapat: $RUN_ID"
+
+          echo "✅ RUN_ID didapat: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
       - name: Debug - Show model artifact path (optional)
