@@ -33,16 +33,15 @@ jobs:
         id: run_mlflow
         run: |
           echo "Menjalankan MLflow Project..."
-          output=$(mlflow run . --env-manager=local --experiment-name "Telco-Customer-Churn-Tuning")
-          echo "$output"
-
-          RUN_ID=$(echo "$output" | grep -oP "Run \(ID '\K[^']+")
+          mlflow run . --env-manager=local --experiment-name "Telco-Customer-Churn-Tuning"
+      
+          RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
           if [ -z "$RUN_ID" ]; then
-            echo "❌ Gagal menangkap RUN_ID!"
+            echo "Gagal menangkap RUN_ID!"
             exit 1
           fi
-
-          echo "✅ RUN_ID didapat: $RUN_ID"
+      
+          echo "RUN_ID didapat: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
       - name: Debug - Show model artifact path (optional)
