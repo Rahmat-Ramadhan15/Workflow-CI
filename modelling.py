@@ -7,18 +7,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import sys
 
-# ======= Argument parsing dari MLproject entry_point ========
+# Argument parsing dari MLproject entry_point
 n_estimators_default = int(sys.argv[1]) if len(sys.argv) > 1 else 200
 max_depth_default = int(sys.argv[2]) if len(sys.argv) > 2 else 10
 dataset_path = sys.argv[3] if len(sys.argv) > 3 else "data_automate_processing.csv"
-# ============================================================
 
 # Set nama eksperimen
 mlflow.set_experiment("Telco-Customer-Churn-Tuning")
 
-# Jalankan run MLflow secara eksplisit (penting saat pakai mlflow run CLI)
-with mlflow.start_run(run_name=f"Tuning_RF_n{n_estimators_default}_d{max_depth_default}"):
-    # Aktifkan autolog
+# Start run sebagai nested
+with mlflow.start_run(run_name=f"Tuning_RF_n{n_estimators_default}_d{max_depth_default}", nested=True):
     mlflow.sklearn.autolog()
 
     # Load dataset
@@ -26,7 +24,7 @@ with mlflow.start_run(run_name=f"Tuning_RF_n{n_estimators_default}_d{max_depth_d
     X = df.drop("Churn", axis=1)
     y = df["Churn"]
 
-    # Split data
+    # Split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Train model
@@ -37,12 +35,12 @@ with mlflow.start_run(run_name=f"Tuning_RF_n{n_estimators_default}_d{max_depth_d
     )
     model.fit(X_train, y_train)
 
-    # Evaluate & log metric
+    # Log akurasi
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
     mlflow.log_metric("manual_accuracy", acc)
 
-    # Simpan model ke artifact
+    # Log model
     mlflow.sklearn.log_model(model, artifact_path="model")
 
     print(f"✅ Model selesai dengan akurasi: {acc:.4f}")
