@@ -29,25 +29,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install mlflow
 
-      - name: Run MLflow Project and Capture RUN_ID
-        id: run_mlflow
+      - name: Run mlflow project
         run: |
-          echo "Menjalankan MLflow Project..."
-          mlflow run . --env-manager=local --experiment-name "Telco-Customer-Churn-Tuning"
-      
-          RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
-          if [ -z "$RUN_ID" ]; then
-            echo "Gagal menangkap RUN_ID!"
-            exit 1
-          fi
-      
-          echo "RUN_ID didapat: $RUN_ID"
-          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          mlflow run --env-manager=local
 
-      - name: Debug - Show model artifact path (optional)
+      - name: Get latest MLflow run_id
         run: |
-          echo "Checking if model exists at mlruns/0/$RUN_ID/artifacts/"
-          ls -R mlruns/0/$RUN_ID/artifacts/
+          RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Latest run_id: $RUN_ID"
 
       - name: Build Docker Model
         run: |
