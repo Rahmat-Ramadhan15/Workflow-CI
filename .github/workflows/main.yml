@@ -33,11 +33,15 @@ jobs:
         run: |
           mlflow run . --env-manager=local
 
-      - name: Get latest MLflow run_id from experiment
+      - name: Run mlflow project and extract run_id
         run: |
-          RUN_ID=$(mlflow runs list -n 1 --experiment-name "Telco-Customer-Churn-Tuning" --order-by "start_time DESC" | tail -n 1 | awk '{print $1}')
+          echo "Menjalankan MLflow Project..."
+          mlflow run . --env-manager=local --experiment-name "Telco-Customer-Churn-Tuning" | tee output.log
+
+          echo "Menangkap RUN_ID dari output..."
+          RUN_ID=$(grep -oP "Run (ID '.*?')" output.log | grep -oP "'(.*?)'" | tr -d "'")
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-          echo "Latest run_id: $RUN_ID"
+          echo "✅ RUN_ID didapat: $RUN_ID"
 
       - name: Debug - Show model artifact path (optional)
         run: |
