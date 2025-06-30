@@ -6,41 +6,41 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import sys
+import warnings
 
-# ======= Argument parsing dari MLproject entry_point ========
-n_estimators_default = int(sys.argv[1]) if len(sys.argv) > 1 else 200
-max_depth_default = int(sys.argv[2]) if len(sys.argv) > 2 else 10
-dataset_path = sys.argv[3] if len(sys.argv) > 3 else "data_automate_processing.csv"
-# ============================================================
+if __name__ == "__main__":
+    warnings.filterwarnings("ignore")
+    np.random.seed(40)
 
-# Set nama eksperimen
-mlflow.set_experiment("Telco-Customer-Churn-Tuning")
+    # Parse arguments
+    n_estimators = int(sys.argv[1]) if len(sys.argv) > 1 else 200
+    max_depth = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+    dataset_path = sys.argv[3] if len(sys.argv) > 3 else "data_automate_processing.csv"
 
-# Aktifkan autologging
-mlflow.sklearn.autolog()
+    # Load dataset
+    df = pd.read_csv(dataset_path)
+    X = df.drop("Churn", axis=1)
+    y = df["Churn"]
 
-# Load dataset
-df = pd.read_csv(dataset_path)
-X = df.drop("Churn", axis=1)
-y = df["Churn"]
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    input_example = X_train.iloc[:5]
 
-# Train model
-model = RandomForestClassifier(
-    n_estimators=n_estimators_default,
-    max_depth=max_depth_default,
-    random_state=42
-)
-model.fit(X_train, y_train)
+    with mlflow.start_run():
+        model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+        model.fit(X_train, y_train)
 
-# Evaluate & log metric
-y_pred = model.predict(X_test)
-acc = accuracy_score(y_test, y_pred)
-mlflow.log_metric("manual_accuracy", acc)
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
 
-# Simpan model ke artifact
-mlflow.sklearn.log_model(model, artifact_path="model")
+        mlflow.log_metric("accuracy", accuracy)
 
-print(f"✅ Model selesai dengan akurasi: {acc:.4f}")
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            artifact_path="model",
+            input_example=input_example
+        )
+
+        print(f"\nModel selesai dengan akurasi: {accuracy:.4f}")
