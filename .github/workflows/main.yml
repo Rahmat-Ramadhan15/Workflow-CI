@@ -33,7 +33,7 @@ jobs:
         run: |
           mlflow run . --env-manager=local
 
-      - name: Run MLflow Project and Extract RUN_ID
+      - name: Run MLflow Project and Capture RUN_ID
         id: run_mlflow
         run: |
           echo "Menjalankan MLflow Project..."
@@ -42,7 +42,7 @@ jobs:
       
           RUN_ID=$(echo "$output" | grep -oP "Run \(ID '\K[^']+")
           if [ -z "$RUN_ID" ]; then
-            echo "Gagal menangkap RUN_ID!"
+            echo "❌ Gagal menangkap RUN_ID!"
             exit 1
           fi
       
