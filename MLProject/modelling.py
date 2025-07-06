@@ -3,38 +3,46 @@ import mlflow
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from imblearn.over_sampling import SMOTE
 
-# Load data hasil preprocessing
-df = pd.read_csv("data_preprocessing.csv")
+# Load dataset dari URL atau path lokal
+df = pd.read_csv("data_processing.csv")
 
 # Pisahkan fitur dan target
-X = df.drop("stroke", axis=1)
+X = df.drop(columns=["stroke"])
 y = df["stroke"]
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=42)
+# Bagi data
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.3, random_state=42)
 
-# Oversampling hanya pada data latih
+# Oversampling dengan SMOTE
 smote = SMOTE(random_state=42)
-X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+X_train_os, y_train_os = smote.fit_resample(X_train, y_train)
 
-# MLflow setup
-# mlflow.set_tracking_uri("http://127.0.0.1:5000/")
+# Set experiment (tanpa tracking URI)
 mlflow.set_experiment("Stroke Prediction")
 
 with mlflow.start_run():
-    mlflow.autolog()
+    # Inisialisasi dan training
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train_os, y_train_os)
 
-    # Model tanpa tuning
-    model = RandomForestClassifier(random_state=42)
-    model.fit(X_train_res, y_train_res)
-
-    # Logging eksplisit model
-    mlflow.sklearn.log_model(model, artifact_path="model", input_example=X_train.iloc[:5])
+    # Prediksi
+    y_pred = model.predict(X_test)
 
     # Evaluasi
-    y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred, zero_division=0)
+    rec = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+
+    # Logging manual
+    mlflow.log_param("n_estimators", 100)
     mlflow.log_metric("accuracy", acc)
+    mlflow.log_metric("precision", prec)
+    mlflow.log_metric("recall", rec)
+    mlflow.log_metric("f1_score", f1)
+
+    # Simpan model
+    mlflow.sklearn.log_model(model, "model")
