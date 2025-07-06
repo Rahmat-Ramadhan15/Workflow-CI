@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from imblearn.over_sampling import SMOTE
 
 # Load dataset dari URL atau path lokal
-df = pd.read_csv("data_processing.csv")
+df = pd.read_csv("data_preprocessing.csv")
 
 # Pisahkan fitur dan target
 X = df.drop(columns=["stroke"])
