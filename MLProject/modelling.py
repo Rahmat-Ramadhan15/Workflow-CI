@@ -21,7 +21,7 @@ smote = SMOTE(random_state=42)
 X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
 
 # MLflow setup
-mlflow.set_tracking_uri("http://127.0.0.1:5000/")
+# mlflow.set_tracking_uri("http://127.0.0.1:5000/")
 mlflow.set_experiment("Stroke Prediction")
 
 with mlflow.start_run():
