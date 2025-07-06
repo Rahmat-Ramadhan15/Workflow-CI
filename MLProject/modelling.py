@@ -29,24 +29,25 @@ X_train_os, y_train_os = smote.fit_resample(X_train, y_train)
 # Set experiment
 mlflow.set_experiment("Stroke Prediction")
 
-# Model training & logging
-model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
-model.fit(X_train_os, y_train_os)
+with mlflow.start_run():
+    # Inisialisasi dan training model
+    model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+    model.fit(X_train_os, y_train_os)
 
-# Evaluasi
-y_pred = model.predict(X_test)
-acc = accuracy_score(y_test, y_pred)
-prec = precision_score(y_test, y_pred, zero_division=0)
-rec = recall_score(y_test, y_pred)
-f1 = f1_score(y_test, y_pred)
+    # Prediksi & evaluasi
+    y_pred = model.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred, zero_division=0)
+    rec = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
 
-# Logging manual
-mlflow.log_param("n_estimators", n_estimators)
-mlflow.log_param("max_depth", max_depth)
-mlflow.log_metric("accuracy", acc)
-mlflow.log_metric("precision", prec)
-mlflow.log_metric("recall", rec)
-mlflow.log_metric("f1_score", f1)
+    # Logging manual
+    mlflow.log_param("n_estimators", n_estimators)
+    mlflow.log_param("max_depth", max_depth)
+    mlflow.log_metric("accuracy", acc)
+    mlflow.log_metric("precision", prec)
+    mlflow.log_metric("recall", rec)
+    mlflow.log_metric("f1_score", f1)
 
-# Log model
-mlflow.sklearn.log_model(model, "model")
+    # Log model
+    mlflow.sklearn.log_model(model, "model")
